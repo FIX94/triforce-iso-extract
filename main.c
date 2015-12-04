@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 	while(*pptr != '\\') pptr--;
 	*pptr = '\0';
 	//lets actually do cool stuff
-	puts("Triforce ISO Extract v1.0 by FIX94");
+	puts("Triforce ISO Extract v1.1 by FIX94");
 	if(argc != 2)
 	{
 		puts("No input file!");
@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
 			if(gc_size > ONE_MB)
 			{
 				memcpy(fOutName,inBuf+32,fNameLen-2);
-				fOutName[fNameLen-1] = '\0';
+				fOutName[fNameLen-2] = '\0';
 				break;
 			}
 			else
