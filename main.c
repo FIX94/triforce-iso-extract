@@ -16,7 +16,6 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 #include <stdio.h>
-#include <malloc.h>
 #include <windows.h>
 #include "des.h"
 
@@ -77,37 +76,55 @@ void decryptSector(unsigned char *in, unsigned char *out)
 #define ONE_MB 0x100000
 int main(int argc, char *argv[])
 {
+	FILE *f = NULL;
+	int created_tmp = 0;
+	int has_basepath = 0;
+	char exebasepath[MAX_PATH], gamebasepath[MAX_PATH], tmppath[MAX_PATH];
 	//windows exec path is so ugly to get
-	char curpath[MAX_PATH]; 
-	GetModuleFileName(NULL, curpath, MAX_PATH);
-	char *pptr = curpath;
-	while(*pptr) pptr++;
-	while(*pptr != '\\') pptr--;
-	*pptr = '\0';
+	GetModuleFileName(NULL, exebasepath, MAX_PATH);
+	if(strchr(exebasepath,'\\') != NULL)
+		*strrchr(exebasepath,'\\') = '\0';
 	//lets actually do cool stuff
-	puts("Triforce ISO Extract v1.1 by FIX94");
+	puts("Triforce ISO Extract v1.2 by FIX94");
 	if(argc != 2)
 	{
 		puts("No input file!");
-		goto end_nofile;
+		goto end_prog;
 	}
-	FILE *f = NULL;
+	if(strchr(argv[1],'\\') != NULL)
+	{
+		has_basepath = 1;
+		memcpy(gamebasepath,argv[1],strlen(argv[1])+1);
+		*strrchr(gamebasepath,'\\') = '\0';
+	}
 	if(strstr(argv[1],".chd") != NULL)
 	{
 		puts("CHD file mode");
-		puts("Creating tmp directory...");
-		mkdir("tmp");
-		char fullpath[2048];
-		puts("Calling chdman...\n");
-		sprintf(fullpath,"\"\"%s\\chdman.exe\" extractraw -i \"%s\" -o tmp/raw.bin\"",curpath, argv[1]);
-		system(fullpath);
+		puts("Creating tmp directory...\nCalling chdman...\n");
+		created_tmp = 1;
+		char systemcmd[2048];
+		if(has_basepath)
+		{
+			sprintf(tmppath, "%s\\tmp", gamebasepath);
+			mkdir(tmppath);
+			sprintf(systemcmd,"\"\"%s\\chdman.exe\" extractraw -i \"%s\" -o \"%s\\tmp\\raw.bin\"\"", exebasepath, argv[1], gamebasepath);
+			system(systemcmd);
+			sprintf(tmppath, "%s\\tmp\\raw.bin", gamebasepath);
+			f = fopen(tmppath, "rb");
+		}
+		else
+		{
+			mkdir("tmp");
+			sprintf(systemcmd,"\"\"%s\\chdman.exe\" extractraw -i \"%s\" -o tmp/raw.bin\"", exebasepath, argv[1]);
+			system(systemcmd);
+			f = fopen("tmp/raw.bin", "rb");
+		}
 		printf("\n");
-		f = fopen("tmp/raw.bin","rb");
 		if(!f)
 		{
 			puts("Unable to open raw.bin!");
-			printf("The following command line was used:\n%s\n", fullpath);
-			goto end_nofile;
+			printf("The following command line was used:\n%s\n", systemcmd);
+			goto end_prog;
 		}
 	}
 	else
@@ -117,7 +134,7 @@ int main(int argc, char *argv[])
 		if(!f)
 		{
 			printf("Unable to open %s!\n",argv[1]);
-			goto end_nofile;
+			goto end_prog;
 		}
 	}
 	fseek(f,0,SEEK_END);
@@ -125,7 +142,7 @@ int main(int argc, char *argv[])
 	if(fsize < ONE_MB)
 	{
 		puts("File too small!");
-		goto end_file;
+		goto end_prog;
 	}
 	/* every image starts with SEGA so we can use that as offset */
 	unsigned char inBuf[0x1000],outBuf[0x1000];
@@ -145,7 +162,7 @@ int main(int argc, char *argv[])
 	if(sec_offset > 0x800)
 	{
 		puts("Invalid Sector Offset!");
-		goto end_file;
+		goto end_prog;
 	}
 	printf("Sector Offset: 0x%x\n\n",sec_offset);
 
@@ -181,7 +198,7 @@ int main(int argc, char *argv[])
 	if(sec_size > 0x1000 || (sec_size - sec_offset) < 0x800)
 	{
 		puts("Invalid Sector Size!");
-		goto end_file;
+		goto end_prog;
 	}
 	printf("Sector Size: %i bytes\n\n", sec_size);
 
@@ -206,7 +223,7 @@ int main(int argc, char *argv[])
 	if(!found || i >= readMax)
 	{
 		puts("GD-ROM Track 3 not found!");
-		goto end_file;
+		goto end_prog;
 	}
 	size_t t3_start = (i+start_pos)-0x100-sec_offset;
 	printf("GD-ROM Track 3 Start: 0x%08x\n\n", t3_start);
@@ -270,11 +287,18 @@ int main(int argc, char *argv[])
 			if(findDESKey(inBuf+sec_offset))
 			{
 				puts("Found Valid DES Key!\n");
-				FILE *fOut = fopen(fOutName,"wb");
+				FILE *fOut = NULL;
+				if(has_basepath)
+				{
+					sprintf(tmppath,"%s\\%s",gamebasepath,fOutName);
+					fOut = fopen(tmppath,"wb");
+				}
+				else
+					fOut = fopen(fOutName,"wb");
 				if(!fOut)
 				{
 					puts("Unable to create file!");
-					goto end_file;
+					goto end_prog;
 				}
 				printf("Writing file... 0%%");
 				fseek(f,gc_offset,SEEK_SET);
@@ -301,12 +325,25 @@ int main(int argc, char *argv[])
 	}
 	else
 		puts("No .BIN found!");
-end_file:
-	fclose(f);
-end_nofile:
-	puts("Cleaning up tmp struct...");
-	unlink("tmp/raw.bin");
-	rmdir("tmp");
+end_prog:
+	if(f != NULL)
+		fclose(f);
+	if(created_tmp)
+	{
+		puts("Cleaning up tmp struct...");
+		if(has_basepath)
+		{
+			sprintf(tmppath, "%s\\tmp\\raw.bin", gamebasepath);
+			unlink(tmppath);
+			sprintf(tmppath, "%s\\tmp", gamebasepath);
+			rmdir(tmppath);
+		}
+		else
+		{
+			unlink("tmp/raw.bin");
+			rmdir("tmp");
+		}
+	}
 	puts("Press enter to exit");
 	getc(stdin);
 	return 0;
