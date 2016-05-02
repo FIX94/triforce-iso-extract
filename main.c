@@ -1,6 +1,6 @@
 /* 
  * Triforce ISO Extract
- * Copyright (C) 2015 FIX94
+ * Copyright (C) 2015 - 2016 FIX94
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,13 @@
 #include "des.h"
 
 /* All the Triforce DES Keys I know */
-#define KEYS_AVAIL 10
+#define KEYS_AVAIL 11
 static const unsigned long long trikeys[KEYS_AVAIL] = {
 	0xA82F6B8C6BC2158CULL, //F-Zero AX
 	0xE0B9043E4C4F40BCULL, //Gekitou Pro Yakyuu
 	0x2ADAE57FEF076D1AULL, //The Key of Avalon
 	0xF2A24C7C6191E39DULL, //The Key of Avalon 2
+	0xD96446469BDCE9C1ULL, //Triforce Firmware Update
 	0x20FBD010E91AF4B3ULL, //Virtua Striker 3 Ver. 2002 (Japan)
 	0x0B45139D91E0084FULL, //Virtua Striker 3 Ver. 2002 (Export)
 	0x08BC388F76CB0231ULL, //Virtua Striker 4 (Japan)
@@ -85,7 +86,7 @@ int main(int argc, char *argv[])
 	if(strchr(exebasepath,'\\') != NULL)
 		*strrchr(exebasepath,'\\') = '\0';
 	//lets actually do cool stuff
-	puts("Triforce ISO Extract v1.2 by FIX94");
+	puts("Triforce ISO Extract v1.3 by FIX94");
 	if(argc != 2)
 	{
 		puts("No input file!");
