@@ -20,7 +20,7 @@
 #include "des.h"
 
 /* All the Triforce DES Keys I know */
-#define KEYS_AVAIL 11
+#define KEYS_AVAIL 12
 static const unsigned long long trikeys[KEYS_AVAIL] = {
 	0xA82F6B8C6BC2158CULL, //F-Zero AX
 	0xE0B9043E4C4F40BCULL, //Gekitou Pro Yakyuu
@@ -30,7 +30,8 @@ static const unsigned long long trikeys[KEYS_AVAIL] = {
 	0x20FBD010E91AF4B3ULL, //Virtua Striker 3 Ver. 2002 (Japan)
 	0x0B45139D91E0084FULL, //Virtua Striker 3 Ver. 2002 (Export)
 	0x08BC388F76CB0231ULL, //Virtua Striker 4 (Japan)
-	0x0BB58579C846C1DCULL, //Virtua Striker 4 (Export)
+	0x86619BB95BEC924AULL, //Virtua Striker 4 (Export) (GDT-0014)
+	0x0BB58579C846C1DCULL, //Virtua Striker 4 (Export) (GDT-0015)
 	0x83622ABF57DA1951ULL, //Virtua Striker 4 Ver. 2006 (Japan)
 	0xABFBD902FBD980E5ULL, //Virtua Striker 4 Ver. 2006 (Export)
 };
@@ -86,7 +87,7 @@ int main(int argc, char *argv[])
 	if(strchr(exebasepath,'\\') != NULL)
 		*strrchr(exebasepath,'\\') = '\0';
 	//lets actually do cool stuff
-	puts("Triforce ISO Extract v1.3 by FIX94");
+	puts("Triforce ISO Extract v1.4 by FIX94");
 	if(argc != 2)
 	{
 		puts("No input file!");
