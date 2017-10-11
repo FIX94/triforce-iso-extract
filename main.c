@@ -34,6 +34,8 @@ static const unsigned long long trikeys[KEYS_AVAIL] = {
 	0x0BB58579C846C1DCULL, //Virtua Striker 4 (Export) (GDT-0015)
 	0x83622ABF57DA1951ULL, //Virtua Striker 4 Ver. 2006 (Japan)
 	0xABFBD902FBD980E5ULL, //Virtua Striker 4 Ver. 2006 (Export)
+	0xF767A7B0019E6751ULL, //Mario Kart Arcade Grand Prix (Japan)
+	0xCEA2131991982F2AULL, //Mario Kart Arcade Grand Prix 2 (Japan)
 };
 
 /* Triforce games are encrypted a little weird */
